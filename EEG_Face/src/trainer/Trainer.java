@@ -1,10 +1,8 @@
 package trainer;
 
-import java.io.BufferedReader;
-import java.io.FileReader;
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.List;
-import java.util.StringTokenizer;
 import java.util.Vector;
 
 import libsvm.svm;
@@ -13,74 +11,86 @@ import libsvm.svm_node;
 import libsvm.svm_parameter;
 import libsvm.svm_print_interface;
 import libsvm.svm_problem;
-import Common.SvmInput;
+import common.Logger;
+import common.SvmInput;
 
 public class Trainer {
 
-	private svm_parameter param;		// set by parse_command_line
+	private svm_parameter libSVMParams;		// set by parse_command_line
 	private svm_problem prob;		// set by read_problem
 	private svm_model model;
 	private String model_file_name;		// set by parse_command_line
 	private String error_msg;
-	private int cross_validation;
-
+	
 	private TrainerParameters params;
-	private List<SvmInput<Double>> trainingSamples;
+	private TrainerParameters bestParams;
+	private Double crossRatio;
 
-	public Trainer(TrainerParameters params)
+	private List<SvmInput<Double>> allSamples;
+
+	private Logger logger;
+
+	public Trainer(TrainerParameters params, Logger logger)
 	{
 		this.params = new TrainerParameters(params);
+		this.logger = logger;
 		init();
 	}
 
 	private void do_cross_validation()
 	{
-		/*int i;
-		int total_correct = 0;
-		double total_error = 0;
-		double sumv = 0, sumy = 0, sumvv = 0, sumyy = 0, sumvy = 0;
-		double[] target = new double[prob.l];
+		List<SvmInput<Double>> trainingSamples = new ArrayList<SvmInput<Double>>();
+		List<SvmInput<Double>> crossSamples =  new ArrayList<SvmInput<Double>>(); 
 
-		svm.svm_cross_validation(prob,param,nr_fold,target);
-		if(param.svm_type == svm_parameter.EPSILON_SVR ||
-				param.svm_type == svm_parameter.NU_SVR)
+		this.crossRatio = 0.0;
+
+		selectTrainingCrossSamples(trainingSamples,crossSamples);
+
+		for(double currentGamma = this.params.GammaStart;currentGamma<=this.params.GammaEnd;currentGamma += this.params.GammaStep)
 		{
-			for(i=0;i<prob.l;i++)
+			for(double currentNu = this.params.NuStart;currentNu<=this.params.NuEnd;currentNu += this.params.NuStep)
 			{
-				double y = prob.y[i];
-				double v = target[i];
-				total_error += (v-y)*(v-y);
-				sumv += v;
-				sumy += y;
-				sumvv += v*v;
-				sumyy += y*y;
-				sumvy += v*y;
+				svm_model m = train(trainingSamples,currentGamma,currentNu);
+				Double ratio = evaluate(m,crossSamples);
+				if(ratio > this.crossRatio)
+				{
+					this.crossRatio = ratio;
+					this.params.bestGamma = currentGamma;
+					this.params.bestNu = currentNu;
+					try {
+						svm.svm_save_model(this.params.SVMOutFile,m);
+					} catch (IOException e) {
+						// TODO Auto-generated catch block
+						e.printStackTrace();
+					}
+				}
 			}
-			System.out.print("Cross Validation Mean squared error = "+total_error/prob.l+"\n");
-			System.out.print("Cross Validation Squared correlation coefficient = "+
-					((prob.l*sumvy-sumv*sumy)*(prob.l*sumvy-sumv*sumy))/
-					((prob.l*sumvv-sumv*sumv)*(prob.l*sumyy-sumy*sumy))+"\n"
-					);
+
 		}
-		else
-		{
-			for(i=0;i<prob.l;i++)
-				if(target[i] == prob.y[i])
-					++total_correct;
-			System.out.print("Cross Validation Accuracy = "+100.0*total_correct/prob.l+"%\n");
-		}*/
 	}
-	
+
+	private Double evaluate(svm_model m, List<SvmInput<Double>> crossSamples) {
+		// TODO Auto-generated method stub
+		return null;
+	}
+
+	private void selectTrainingCrossSamples(
+			List<SvmInput<Double>> trainingSamples,
+			List<SvmInput<Double>> crossSamples) {
+		// TODO Auto-generated method stub
+
+	}
+
 	public void addTrainingSamples(List<SvmInput<Double>> samples)
 	{
-		this.trainingSamples.addAll(samples);
+		this.allSamples.addAll(samples);
 	}
 
-	public void train() throws IOException
+	private svm_model  train(List<SvmInput<Double>> samples, double currentGamma, double currentNu)
 	{
-		init();
-		transfSamplesToSVMFormat();
-		error_msg = svm.svm_check_parameter(prob,param);
+		init(currentGamma,currentNu);
+		transfSamplesToSVMFormat(samples);
+		error_msg = svm.svm_check_parameter(prob,libSVMParams);
 
 		if(error_msg != null)
 		{
@@ -88,54 +98,52 @@ public class Trainer {
 			System.exit(1);
 		}
 
-		if(cross_validation != 0)
-		{
-			do_cross_validation();
-		}
-		else
-		{
-			model = svm.svm_train(prob,param);
-			svm.svm_save_model(model_file_name,model);
-		}
+		model = svm.svm_train(prob,libSVMParams);
+		return model;
 	}
 
+
+	private void init(double currentGamma, double currentNu) {
+		init();
+		libSVMParams.gamma = currentGamma;
+		libSVMParams.nu = currentNu;
+	}
 
 	private void init()
 	{
 		svm_print_interface print_func = svm_print_null;	// default printing to stdout
 
-		param = new svm_parameter();
+		libSVMParams = new svm_parameter();
 		// default values
-		param.svm_type = svm_parameter.NU_SVC;
-		param.kernel_type = svm_parameter.RBF;
-		param.degree = 3;
-		param.gamma = 0.03;	// 1/num_features
-		param.coef0 = 0;
-		param.nu = 0.5;
-		param.cache_size = 100;
-		param.C = 1;
-		param.eps = 1e-3;
-		param.p = 0.1;
-		param.shrinking = 1;
-		param.probability = 0;
-		param.nr_weight = 0;
-		param.weight_label = new int[0];
-		param.weight = new double[0];
-		cross_validation = 0;
+		libSVMParams.svm_type = svm_parameter.NU_SVC;
+		libSVMParams.kernel_type = svm_parameter.RBF;
+		libSVMParams.degree = 3;
+		libSVMParams.gamma = 0.03;	// 1/num_features
+		libSVMParams.coef0 = 0;
+		libSVMParams.nu = 0.5;
+		libSVMParams.cache_size = 100;
+		libSVMParams.C = 1;
+		libSVMParams.eps = 1e-3;
+		libSVMParams.p = 0.1;
+		libSVMParams.shrinking = 1;
+		libSVMParams.probability = 0;
+		libSVMParams.nr_weight = 0;
+		libSVMParams.weight_label = new int[0];
+		libSVMParams.weight = new double[0];
 
 		this.model_file_name = this.params.SVMOutFile;
 		svm.svm_set_print_string_function(print_func);
 
 	}
 
-	private void transfSamplesToSVMFormat() throws IOException
+	private void transfSamplesToSVMFormat(List<SvmInput<Double>> samples)
 	{
 
 		Vector<Double> vy = new Vector<Double>();
 		Vector<svm_node[]> vx = new Vector<svm_node[]>();
 		int max_index = 0;
 
-		for(SvmInput<Double> sample : this.trainingSamples)
+		for(SvmInput<Double> sample : samples)
 		{
 			if(sample.isTrainingSample())
 			{
@@ -162,10 +170,10 @@ public class Trainer {
 		for(int i=0;i<prob.l;i++)
 			prob.y[i] = vy.elementAt(i);
 
-		if(param.gamma == 0 && max_index > 0)
-			param.gamma = 1.0/max_index;
+		if(libSVMParams.gamma == 0 && max_index > 0)
+			libSVMParams.gamma = 1.0/max_index;
 
-		if(param.kernel_type == svm_parameter.PRECOMPUTED)
+		if(libSVMParams.kernel_type == svm_parameter.PRECOMPUTED)
 			for(int i=0;i<prob.l;i++)
 			{
 				if (prob.x[i][0].index != 0)

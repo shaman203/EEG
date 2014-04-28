@@ -1,6 +1,6 @@
 package inputLayer;
 
-import Common.SvmInput;
+import common.SvmInput;
 
 public interface ITrainingDataConsumer {
 

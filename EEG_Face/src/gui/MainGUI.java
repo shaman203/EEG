@@ -20,7 +20,7 @@ public class MainGUI {
 
 	private JPanel offlinePanel;
 	private JPanel onlinePanel;
-	private JTextArea logTextArea;
+	public JTextArea logTextArea;
 	private JButton selectModelLocationBtn;
 	private JTextField modelFilenameField;
 	private JCheckBox saveLogToFileChckBox;
@@ -38,6 +38,7 @@ public class MainGUI {
 	private JTextField GammaStartField;
 	private JTextField GammaEndField;
 	private JTextField GammaStepField;
+	private JTextField CrossvalidationRatio;
 	private JButton offlineTrainSetupOkBtn;
 
 
@@ -165,7 +166,7 @@ public class MainGUI {
 	{
 		JDialog dialog = new JDialog();
 		dialog.setTitle("Offline training setup");
-		dialog.setSize(200, 400);
+		dialog.setSize(200, 270);
 
 		JPanel dialogPanel = new JPanel();
 
@@ -182,7 +183,10 @@ public class MainGUI {
 		GammaEndField = new JTextField(controller.getGammaEnd());
 		JLabel gammaStepLabel = new JLabel("GammaStep");
 		GammaStepField = new JTextField(controller.getGammaStep());
-		offlineTrainSetupOkBtn = new JButton("Ok");
+		JLabel crossvalidationRatioLabel = new JLabel("Cross-ratio");
+		CrossvalidationRatio = new JTextField(controller.getCrossRatio());
+
+		offlineTrainSetupOkBtn = new JButton("Save");
 		offlineTrainSetupOkBtn.addActionListener(new ActionListener() {
 			@Override
 			public void actionPerformed(ActionEvent arg0) {
@@ -192,18 +196,10 @@ public class MainGUI {
 				controller.setGammaStart(GammaStartField.getText());
 				controller.setGammaEnd(GammaEndField.getText());
 				controller.setGammaStep(GammaStepField.getText());
+				controller.setCrossRatio(CrossvalidationRatio.getText());
 			}
 		});
-		/*dialogPanel.add(NuStartField);
-		dialogPanel.add(NuEndField);
-		dialogPanel.add(NuStepField);
-		dialogPanel.add(GammaStartField);
-		dialogPanel.add(GammaEndField);
-		dialogPanel.add(GammaStepField);
-		dialogPanel.add(offlineTrainSetupOkBtn);	*/
-
-
-
+		
 		GroupLayout layout = new GroupLayout(dialogPanel);
 		dialogPanel.setLayout(layout);
 
@@ -230,7 +226,10 @@ public class MainGUI {
 														.addGroup(layout.createSequentialGroup()
 																.addComponent(gammaStepLabel)
 																.addComponent(GammaStepField))
-																.addComponent(offlineTrainSetupOkBtn)
+																.addGroup(layout.createSequentialGroup()
+																		.addComponent(crossvalidationRatioLabel)
+																		.addComponent(CrossvalidationRatio))
+																		.addComponent(offlineTrainSetupOkBtn)
 				);
 		layout.setVerticalGroup(
 				layout.createSequentialGroup()
@@ -252,7 +251,10 @@ public class MainGUI {
 														.addGroup(layout.createParallelGroup(GroupLayout.Alignment.BASELINE)
 																.addComponent(gammaStepLabel)
 																.addComponent(GammaStepField))
-																.addComponent(offlineTrainSetupOkBtn)
+																.addGroup(layout.createParallelGroup(GroupLayout.Alignment.BASELINE)
+																		.addComponent(crossvalidationRatioLabel)
+																		.addComponent(CrossvalidationRatio))
+																		.addComponent(offlineTrainSetupOkBtn)
 				);
 
 

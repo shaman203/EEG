@@ -1,6 +1,19 @@
 package gui;
 
-public class Controller {
+public class Controller implements ILogViewer{
+	
+	private MainGUI gui;
+
+	public Controller(MainGUI gui)
+	{
+		this.gui = gui;
+		init();
+	}
+	
+	private void init() {
+		// TODO Auto-generated method stub
+		
+	}
 
 	public String getNuStart() {
 		// TODO Auto-generated method stub
@@ -60,6 +73,22 @@ public class Controller {
 	public void setGammaStep(String text) {
 		// TODO Auto-generated method stub
 		
+	}
+
+	public void setCrossRatio(String text) {
+		// TODO Auto-generated method stub
+		
+	}
+
+	public String getCrossRatio() {
+		// TODO Auto-generated method stub
+		return null;
+	}
+
+	@Override
+	public void viewMessage(String msg) {
+		// TODO Auto-generated method stub
+		gui.logTextArea.append(msg);
 	}
 
 }

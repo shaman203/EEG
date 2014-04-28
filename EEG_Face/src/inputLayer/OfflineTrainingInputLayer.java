@@ -7,7 +7,7 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 
-import Common.SvmInput;
+import common.SvmInput;
 
 public class OfflineTrainingInputLayer {
 

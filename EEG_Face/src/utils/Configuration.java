@@ -1,4 +1,4 @@
-package Utils;
+package utils;
 
 import preprocess.PreprocessParameters;
 import trainer.TrainerParameters;
