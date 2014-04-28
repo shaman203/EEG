@@ -41,7 +41,6 @@ public class OfflineTrainingInputLayer {
 
 			String line = br.readLine();
 
-			Measurement m=null;
 			while (line != null) {
 
 				String[] elements = line.split(",");
