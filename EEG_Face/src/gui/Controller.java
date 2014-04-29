@@ -1,94 +1,89 @@
 package gui;
 
+import utils.Configuration;
+
 public class Controller implements ILogViewer{
-	
+
 	private MainGUI gui;
+	private Configuration config;
 
 	public Controller(MainGUI gui)
 	{
 		this.gui = gui;
+		this.config = new Configuration();
 		init();
 	}
-	
+
 	private void init() {
 		// TODO Auto-generated method stub
-		
+
 	}
 
 	public String getNuStart() {
-		// TODO Auto-generated method stub
-		return null;
+		return config.getTrainerParameters().getNuStart().toString();
 	}
 
 	public String getNuEnd() {
-		// TODO Auto-generated method stub
-		return null;
+		return config.getTrainerParameters().getNuEnd().toString();
 	}
 
 	public String getNuStep() {
-		// TODO Auto-generated method stub
-		return null;
+		return config.getTrainerParameters().getNuStep().toString();
 	}
 
 	public String getGammaStart() {
-		// TODO Auto-generated method stub
-		return null;
+		return config.getTrainerParameters().getGammaStart().toString();
 	}
 
 	public String getGammaEnd() {
-		// TODO Auto-generated method stub
-		return null;
+		return config.getTrainerParameters().getGammaEnd().toString();
 	}
 
 	public String getGammaStep() {
-		// TODO Auto-generated method stub
-		return null;
-	}
-
-	public void setNuStart(String text) {
-		// TODO Auto-generated method stub
-		
-	}
-
-	public void setNuEnd(String text) {
-		// TODO Auto-generated method stub
-		
-	}
-
-	public void setNuStep(String text) {
-		// TODO Auto-generated method stub
-		
-	}
-
-	public void setGammaStart(String text) {
-		// TODO Auto-generated method stub
-		
-	}
-
-	public void setGammaEnd(String text) {
-		// TODO Auto-generated method stub
-		
-	}
-
-	public void setGammaStep(String text) {
-		// TODO Auto-generated method stub
-		
-	}
-
-	public void setCrossRatio(String text) {
-		// TODO Auto-generated method stub
-		
+		return config.getTrainerParameters().getGammaStep().toString();
 	}
 
 	public String getCrossRatio() {
-		// TODO Auto-generated method stub
-		return null;
+		return config.getTrainerParameters().getCrossvalidationRatio().toString();
 	}
 
 	@Override
 	public void viewMessage(String msg) {
 		// TODO Auto-generated method stub
 		gui.logTextArea.append(msg);
+	}
+
+	public void startOfflineTrain() {
+		// TODO Auto-generated method stub
+
+	}
+
+	public boolean validateParameters() {
+		if(config.isValid())
+			return true;
+		else
+			viewMessage(config.getErrorMsg());
+		return false;
+	}
+
+	public void setCrossvalidationParams(String nuStart, String nuEnd,
+			String nuStep, String gammaStart, String gammaEnd, String gammaStep, String crossRatio) {
+		
+		try{
+			Double NuStart = Double.parseDouble(nuStart);
+			Double NuEnd = Double.parseDouble(nuEnd);
+			Double NuStep = Double.parseDouble(nuStep);
+			Double GammaStart = Double.parseDouble(gammaStart);
+			Double GammaEnd = Double.parseDouble(gammaEnd);
+			Double GammaStep = Double.parseDouble(gammaStep);
+			Double CrossRatio = Double.parseDouble(crossRatio);
+			config.getTrainerParameters().setCrossParams(NuStart,NuEnd,NuStep,GammaStart,GammaEnd,GammaStep,CrossRatio);
+		}
+		catch(NumberFormatException e)
+		{
+			viewMessage("Invalid number format");
+		}
+		
 	}
 
 }

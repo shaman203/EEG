@@ -91,6 +91,13 @@ public class MainGUI {
 			}
 		});
 		offlineTrainStartBtn = new JButton("Train");
+		offlineTrainStartBtn.addActionListener(new ActionListener() {
+			@Override
+			public void actionPerformed(ActionEvent e) {
+				MainGUI.this.controller.startOfflineTrain();
+
+			}
+		});
 
 		offlineClassifySetupBtn = new JButton("Classifier setup...");
 		offlineClassifyStartBtn = new JButton("Classify");
@@ -190,13 +197,18 @@ public class MainGUI {
 		offlineTrainSetupOkBtn.addActionListener(new ActionListener() {
 			@Override
 			public void actionPerformed(ActionEvent arg0) {
-				controller.setNuStart(NuStartField.getText());
+				controller.setCrossvalidationParams(NuStartField.getText(),NuEndField.getText(),NuStepField.getText(),GammaStartField.getText(),GammaEndField.getText(),GammaStepField.getText(),CrossvalidationRatio.getText());
+				/*controller.setNuStart(NuStartField.getText());
 				controller.setNuEnd(NuEndField.getText());
 				controller.setNuStep(NuStepField.getText());
 				controller.setGammaStart(GammaStartField.getText());
 				controller.setGammaEnd(GammaEndField.getText());
 				controller.setGammaStep(GammaStepField.getText());
-				controller.setCrossRatio(CrossvalidationRatio.getText());
+				controller.setCrossRatio(CrossvalidationRatio.getText());*/
+				if(controller.validateParameters())
+				{
+					offlineTrainSetupDialog.setVisible(false);;
+				}
 			}
 		});
 		

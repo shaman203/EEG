@@ -50,19 +50,19 @@ public class Trainer {
 
 		selectTrainingCrossSamples(trainingSamples,crossSamples);
 		logger.log("Starting cross-validation....");
-		for(double currentGamma = this.params.GammaStart;currentGamma<=this.params.GammaEnd;currentGamma += this.params.GammaStep)
+		for(double currentGamma = this.params.getGammaStart();currentGamma<=this.params.getGammaEnd();currentGamma += this.params.getGammaStep())
 		{
-			for(double currentNu = this.params.NuStart;currentNu<=this.params.NuEnd;currentNu += this.params.NuStep)
+			for(double currentNu = this.params.getNuStart();currentNu<=this.params.getNuEnd();currentNu += this.params.getNuStep())
 			{
 				svm_model m = train(trainingSamples,currentGamma,currentNu);
 				Double ratio = evaluate(m,crossSamples);
 				if(ratio > this.crossRatio)
 				{
 					this.crossRatio = ratio;
-					this.params.bestGamma = currentGamma;
-					this.params.bestNu = currentNu;
+					this.params.setBestGamma(currentGamma);
+					this.params.setBestNu(currentNu);
 					try {
-						svm.svm_save_model(this.params.SVMOutFile,m);
+						svm.svm_save_model(this.params.getSVMOutFile(),m);
 					} catch (IOException e) {
 						// TODO Auto-generated catch block
 						e.printStackTrace();
@@ -73,7 +73,7 @@ public class Trainer {
 		}
 		logger.log("Crossvalidation ended: "+this.crossRatio+" accuracy");
 		logger.log(this.params.printBestParams());
-		logger.log("SVM saved to "+this.params.SVMOutFile);
+		logger.log("SVM saved to "+this.params.getSVMOutFile());
 	}
 
 	private Double evaluate(svm_model model, List<SvmInput<Double>> crossSamples) {
@@ -109,7 +109,7 @@ public class Trainer {
 		for(Map.Entry<Double,List<SvmInput<Double>>> c : allSamples.entrySet())
 		{
 			List<SvmInput<Double>> l = c.getValue();
-			int endIndex = (int)Math.round(l.size()*(1-params.crossvalidationRatio));
+			int endIndex = (int)Math.round(l.size()*(1-params.getCrossvalidationRatio()));
 			trainingSamples.addAll(l.subList(0, endIndex));
 			crossSamples.addAll(l.subList(endIndex,l.size()));
 		}

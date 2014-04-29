@@ -8,4 +8,8 @@ public class ClassifierParameters {
 		// TODO Auto-generated constructor stub
 	}
 
+	public ClassifierParameters() {
+		// TODO Auto-generated constructor stub
+	}
+
 }
