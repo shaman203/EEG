@@ -2,7 +2,10 @@ package trainer;
 
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
+import java.util.Set;
 import java.util.Vector;
 
 import libsvm.svm;
@@ -11,6 +14,7 @@ import libsvm.svm_node;
 import libsvm.svm_parameter;
 import libsvm.svm_print_interface;
 import libsvm.svm_problem;
+
 import common.Logger;
 import common.SvmInput;
 
@@ -19,14 +23,13 @@ public class Trainer {
 	private svm_parameter libSVMParams;		// set by parse_command_line
 	private svm_problem prob;		// set by read_problem
 	private svm_model model;
-	private String model_file_name;		// set by parse_command_line
 	private String error_msg;
-	
+
 	private TrainerParameters params;
 	private TrainerParameters bestParams;
 	private Double crossRatio;
 
-	private List<SvmInput<Double>> allSamples;
+	private Map<Double,List<SvmInput<Double>>> allSamples;
 
 	private Logger logger;
 
@@ -34,10 +37,11 @@ public class Trainer {
 	{
 		this.params = new TrainerParameters(params);
 		this.logger = logger;
+		this.allSamples = new HashMap<Double,List<SvmInput<Double>>>();
 		init();
 	}
 
-	private void do_cross_validation()
+	public void runTraining()
 	{
 		List<SvmInput<Double>> trainingSamples = new ArrayList<SvmInput<Double>>();
 		List<SvmInput<Double>> crossSamples =  new ArrayList<SvmInput<Double>>(); 
@@ -45,7 +49,7 @@ public class Trainer {
 		this.crossRatio = 0.0;
 
 		selectTrainingCrossSamples(trainingSamples,crossSamples);
-
+		logger.log("Starting cross-validation....");
 		for(double currentGamma = this.params.GammaStart;currentGamma<=this.params.GammaEnd;currentGamma += this.params.GammaStep)
 		{
 			for(double currentNu = this.params.NuStart;currentNu<=this.params.NuEnd;currentNu += this.params.NuStep)
@@ -67,23 +71,73 @@ public class Trainer {
 			}
 
 		}
+		logger.log("Crossvalidation ended: "+this.crossRatio+" accuracy");
+		logger.log(this.params.printBestParams());
+		logger.log("SVM saved to "+this.params.SVMOutFile);
 	}
 
-	private Double evaluate(svm_model m, List<SvmInput<Double>> crossSamples) {
-		// TODO Auto-generated method stub
-		return null;
+	private Double evaluate(svm_model model, List<SvmInput<Double>> crossSamples) {
+
+		Double total = 0.0;
+		Double correct = 0.0;
+
+		for(SvmInput<Double> sample : crossSamples)
+		{
+			int m = sample.input.size();
+			svm_node[] x = new svm_node[m];
+			for(int j=0;j<m;j++)
+			{
+				x[j] = new svm_node();
+				x[j].index = j;
+				x[j].value = sample.input.get(j);
+			}
+			Double prediction = svm.svm_predict(model,x);
+			if(prediction.equals(sample.sampleClass))
+			{
+				correct++;
+			}
+			total++;
+		}
+
+		return correct/total;
 	}
 
 	private void selectTrainingCrossSamples(
 			List<SvmInput<Double>> trainingSamples,
 			List<SvmInput<Double>> crossSamples) {
-		// TODO Auto-generated method stub
+
+		for(Map.Entry<Double,List<SvmInput<Double>>> c : allSamples.entrySet())
+		{
+			List<SvmInput<Double>> l = c.getValue();
+			int endIndex = (int)Math.round(l.size()*(1-params.crossvalidationRatio));
+			trainingSamples.addAll(l.subList(0, endIndex));
+			crossSamples.addAll(l.subList(endIndex,l.size()));
+		}
+
 
 	}
 
 	public void addTrainingSamples(List<SvmInput<Double>> samples)
-	{
-		this.allSamples.addAll(samples);
+	{	
+		for(SvmInput<Double> sample : samples)
+		{
+			this.addTrainingSample(sample);
+		}
+	}
+
+	public void addTrainingSample(SvmInput<Double> sample)
+	{	
+		if(!allSamples.containsKey(sample.sampleClass))
+		{
+			List<SvmInput<Double>> l = new ArrayList<SvmInput<Double>>();
+			l.add(sample);
+			allSamples.put(sample.sampleClass, l);
+		}
+		else
+		{
+			allSamples.get(sample.sampleClass).add(sample);
+		}
+
 	}
 
 	private svm_model  train(List<SvmInput<Double>> samples, double currentGamma, double currentNu)
@@ -131,7 +185,6 @@ public class Trainer {
 		libSVMParams.weight_label = new int[0];
 		libSVMParams.weight = new double[0];
 
-		this.model_file_name = this.params.SVMOutFile;
 		svm.svm_set_print_string_function(print_func);
 
 	}

@@ -28,4 +28,8 @@ public class TrainerParameters {
 		this.SVMOutFile = params.SVMOutFile;
 		this.SvmType = params.SvmType;
 	}
+
+	public String printBestParams() {
+		return "gamma= "+bestGamma+" nu= "+bestNu;
+	}
 }
