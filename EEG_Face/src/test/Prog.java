@@ -7,7 +7,10 @@ public class Prog {
 
 	public static void main(String[] args) {
 		// TODO Auto-generated method stub
-		new MainGUI(new Controller(null));
+		
+		Controller c = new Controller();
+		MainGUI gui = new MainGUI(c);
+		c.setGui(gui);
 	}
 
 }

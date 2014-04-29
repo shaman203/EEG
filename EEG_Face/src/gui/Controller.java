@@ -1,17 +1,24 @@
 package gui;
 
+import scenarios.OfflineTrainingScenario;
 import utils.Configuration;
+
+import common.Logger;
 
 public class Controller implements ILogViewer{
 
 	private MainGUI gui;
 	private Configuration config;
 
-	public Controller(MainGUI gui)
+	public Controller()
 	{
-		this.gui = gui;
 		this.config = new Configuration();
 		init();
+	}
+	
+	public void setGui(MainGUI gui)
+	{
+		this.gui = gui;
 	}
 
 	private void init() {
@@ -50,12 +57,16 @@ public class Controller implements ILogViewer{
 	@Override
 	public void viewMessage(String msg) {
 		// TODO Auto-generated method stub
-		gui.logTextArea.append(msg);
+		gui.logTextArea.append(msg+"\n");
 	}
 
 	public void startOfflineTrain() {
 		// TODO Auto-generated method stub
-
+		Logger logger = new Logger(config.getLogFilename(), this);
+		OfflineTrainingScenario scenario = new OfflineTrainingScenario(config.getInputLayerParameters(),config.getTrainerParameters(), logger);
+		Thread t = new Thread(scenario);
+		gui.offlineTrainStartBtn.setEnabled(false);
+		t.start();
 	}
 
 	public boolean validateParameters() {

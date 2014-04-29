@@ -91,6 +91,12 @@ public class Configuration {
 		// TODO Auto-generated method stub
 		return "Is valid returned false";
 	}
+
+
+	public String getLogFilename() {
+		// TODO Auto-generated method stub
+		return "log.out";
+	}
 	
 	
 	

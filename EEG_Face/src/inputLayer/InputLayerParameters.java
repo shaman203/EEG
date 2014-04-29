@@ -24,7 +24,7 @@ public class InputLayerParameters {
 		
 		SamplingRate = 200;
 		channelCount = 14;
-		inputFilename = "train.in";
+		inputFilename = "data/train.in";
 		inputDirectory = null;
 		parseDir = false;
 	}

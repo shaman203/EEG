@@ -30,7 +30,7 @@ public class MainGUI {
 
 	private JButton offlineTrainSetupBtn;
 	private JDialog offlineTrainSetupDialog;
-	private JButton offlineTrainStartBtn;
+	public JButton offlineTrainStartBtn;
 
 	private JTextField NuStartField;
 	private JTextField NuEndField;
@@ -73,7 +73,7 @@ public class MainGUI {
 
 
 
-		logTextArea = new JTextArea("Here will the events appear");
+		logTextArea = new JTextArea("Ready\n");
 		selectModelLocationBtn = new JButton("Load SVM...");
 		modelFilenameField = new JTextField("SVM model");
 
@@ -198,13 +198,6 @@ public class MainGUI {
 			@Override
 			public void actionPerformed(ActionEvent arg0) {
 				controller.setCrossvalidationParams(NuStartField.getText(),NuEndField.getText(),NuStepField.getText(),GammaStartField.getText(),GammaEndField.getText(),GammaStepField.getText(),CrossvalidationRatio.getText());
-				/*controller.setNuStart(NuStartField.getText());
-				controller.setNuEnd(NuEndField.getText());
-				controller.setNuStep(NuStepField.getText());
-				controller.setGammaStart(GammaStartField.getText());
-				controller.setGammaEnd(GammaEndField.getText());
-				controller.setGammaStep(GammaStepField.getText());
-				controller.setCrossRatio(CrossvalidationRatio.getText());*/
 				if(controller.validateParameters())
 				{
 					offlineTrainSetupDialog.setVisible(false);;
